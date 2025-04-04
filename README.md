@@ -41,7 +41,7 @@ This project provides a simple and efficient system for testing PCBs (Printed Ci
    - Subsequent elements are device pin labels mapped to MCP23017 pins.
 2. During testing:
    - Each group's first pin is set LOW, and continuity is checked for all other pins in the group.
-   - Shorts are checked by ensuring no other group's first pin is LOW.
+   - Shorts are checked by ensuring no other group's first pin is LOW. (If other groups pass the first test, then inherently we only need to test one pin in each other group.)
 3. Results are displayed on the M5Stack screen:
    - Green circles indicate passing groups.
    - Red circles indicate failing groups.
