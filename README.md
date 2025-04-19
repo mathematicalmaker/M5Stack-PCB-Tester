@@ -1,24 +1,24 @@
 # PCB Testing System
 
-This project provides a simple and efficient system for testing PCBs (Printed Circuit Boards) using an **M5Stack Core** and an **MCP23017 I/O expander**. The system checks for continuity within groups of connected pins and detects shorts between different pin groups. It provides visual feedback on the M5Stack display and logs test results to the serial monitor.
+This project provides a simple and efficient system for testing PCBs (Printed Circuit Boards) using an **M5Stack Core** and an **MCP23017 I/O expander**. The system checks for continuity within nets (groups of electrically connected pins) and detects shorts between different nets. It provides visual feedback on the M5Stack display and logs test results to the serial monitor.
 
 ## Features
 
--   **Continuity Testing**: Verifies that all pins in a group are electrically connected.
--   **Short Detection**: Ensures there are no shorts between different groups of pins.
--   **Visual Feedback**: Displays pass/fail results for each group on the M5Stack screen using colored circles:
-    -   **Green Circle**: Group passed (no issues detected).
-    -   **Red Circle**: Group failed (continuity issue or short detected).
+-   **Continuity Testing**: Verifies that all pins in a net are electrically connected.
+-   **Short Detection**: Ensures there are no shorts between different nets.
+-   **Visual Feedback**: Displays pass/fail results for each net on the M5Stack screen using colored circles:
+    -   **Green Circle**: Net passed (no issues detected).
+    -   **Red Circle**: Net failed (continuity issue or short detected).
 -   **Serial Logging**: Provides detailed failure information for debugging.
--   **Multiple Test Configurations**: Supports up to three different test configurations, selectable using the M5Stack buttons.
--   **Clear Map Identification**: Displays the name of the active test configuration on the M5Stack screen.
--   **Single Pin Mapping**: Simplifies wiring by using a single pin mapping for all configurations.
+-   **Multiple PCB Layouts**: Supports testing up to three different PCB layouts, selectable using the M5Stack buttons.
+-   **Clear Layout Identification**: Displays the name of the active PCB layout on the M5Stack screen.
+-   **Single Pin Mapping**: Simplifies wiring by using a single pin mapping for all layouts.
 
 ## Hardware Requirements
 
 1.  **M5Stack Core Basic** (or compatible model with a display).
 2.  **MCP23017 I/O Expander** (connected via I2C).
-3.  A PCB with pin groups to be tested.
+3.  A PCB with nets to be tested.
 4.  Jumper wires or connectors to interface with the PCB.
 
 ## Software Requirements
@@ -39,18 +39,18 @@ Connect the MCP23017 to the M5Stack via I2C:
 ## How It Works
 
 1.  The program uses a single pin mapping (`pinMapping`) to define the connections between device pins and MCP23017 pins.
-2.  The `groupInfo1`, `groupInfo2`, and `groupInfo3` arrays define up to three different test configurations, each specifying groups of pins to be tested together.
+2.  The `netConfig1`, `netConfig2`, and `netConfig3` arrays define the net configurations for up to three different PCB layouts. Each configuration specifies the nets to be tested.
 3.  During testing:
-    -   The program sets the first pin of each group LOW.
-    -   It then checks continuity for the remaining pins in the group.
-    -   Additionally, it verifies that there are no shorts between groups.
-4.  The M5Stack buttons are used to select the desired test configuration.
-    -   **Button A:** Selects the first test configuration.
-    -   **Button B:** Selects the second test configuration.
-    -   **Button C:** Selects the third test configuration.
+    -   The program sets the first pin of each net LOW.
+    -   It then checks continuity for the remaining pins in the net.
+    -   Additionally, it verifies that there are no shorts between different nets.
+4.  The M5Stack buttons are used to select the PCB layout to test.
+    -   **Button A:** Selects the first PCB layout.
+    -   **Button B:** Selects the second PCB layout.
+    -   **Button C:** Selects the third PCB layout.
 5.  Test results are displayed on the M5Stack screen:
-    -   A green circle indicates that all connections in a group are correct.
-    -   A red circle indicates a continuity break or a short with another group.
+    -   A green circle indicates that all connections in a net are correct.
+    -   A red circle indicates a continuity break or a short with another net.
 6.  Detailed failure information is also printed to the serial monitor for debugging.
 
 ## Setup Instructions
@@ -60,7 +60,7 @@ Connect the MCP23017 to the M5Stack via I2C:
     -   Default MCP23017 address: `0x27`.
     -   SDA and SCL lines connected appropriately.
 2.  Connect the PCB under test to the MCP23017 using jumper wires or connectors, according to your `pinMapping`.
-3.  Load the code onto your M5Stack using the Arduino IDE or PlatformIO.
+3.  Load the code (from the `/src` directory) onto your M5Stack using the Arduino IDE or PlatformIO.
 
 ## Configuration
 
@@ -90,13 +90,15 @@ std::map<std::string, int> pinMapping = {
 };
 ```
 
-### Test Configurations (Group Info)
 
-Define up to three different test configurations using the `groupInfo1`, `groupInfo2`, and `groupInfo3` arrays. Each configuration specifies the pin groups to be tested together.
+### Net Configurations
+
+Define the net configurations for each PCB layout using the `netConfig1`, `netConfig2`, and `netConfig3` arrays. Each configuration specifies the nets to be tested.
 
 Example:
+
 ```
-const char* groupInfo1[][MAX_GROUP_SIZE + 1] = {
+const char* netConfig1[][MAX_NET_SIZE + 1] = {
 {"4-7", "4", "7"},
 {"1-9-CN1|12V", "1", "9", "CN1"},
 {"2-10-CN4|5V", "2", "10", "CN4"},
@@ -104,12 +106,12 @@ const char* groupInfo1[][MAX_GROUP_SIZE + 1] = {
 };
 ```
 
-### Test Configuration Names
+### PCB Layout Names
 
-The `mapNames` array provides descriptive names for each test configuration. These names are displayed on the M5Stack screen to indicate the active configuration.
+The `layoutNames` array provides descriptive names for each PCB layout. These names are displayed on the M5Stack screen to indicate the active layout.
 
 ```
-const char* mapNames[MAX_MAPS] = {
+const char* layoutNames[MAX_LAYOUTS] = {
 "DEM w/ Power Header",
 "Plain DEM",
 "DEM w/ Pwr Hdr Tray State"
@@ -127,26 +129,28 @@ const int circleSpacingY = 100;
 const int labelFontSize = 2;
 ```
 
+
 ## Usage
 
 1.  Connect the MCP23017 to the M5Stack and the PCB to be tested, ensuring that the wiring matches the pin mapping in the code.
 2.  Upload the code (from the `/src` directory) to your M5Stack using the Arduino IDE or PlatformIO.
 3.  Power on the M5Stack.
-4.  Select the desired test configuration by pressing the corresponding button:
-    -   **Button A:** Selects the first test configuration.
-    -   **Button B:** Selects the second test configuration.
-    -   **Button C:** Selects the third test configuration.
+4.  Select the PCB layout to test by pressing the corresponding button:
+    -   **Button A:** Selects the first PCB layout.
+    -   **Button B:** Selects the second PCB layout.
+    -   **Button C:** Selects the third PCB layout.
 5.  Observe the test results on the M5Stack screen:
-    -   Green circles indicate that all connections in a group are correct.
-    -   Red circles indicate a continuity break or a short with another group.
+    -   Green circles indicate that all connections in a net are correct.
+    -   Red circles indicate a continuity break or a short with another net.
 6.  Check the serial monitor for detailed failure information.
 
 ## Serial Output Example
 
 If a failure is detected, you’ll see output similar to the following in the serial monitor:
+
 ```
-Group continuity test failed: Pin 7 did not read LOW
-Short detected: Group 2's first pin is LOW while testing Group 0
+Net continuity test failed: Pin 7 did not read LOW
+Short detected: Net 2's first pin is LOW while testing Net 0
 ```
 
 ## Troubleshooting
@@ -168,7 +172,7 @@ Feel free to submit issues or pull requests to improve this project!
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-Copyright (c) 2025 \[Jason Hoomani]
+Copyright (c) 2025 Jason Hoomani
 
 
 
